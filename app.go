@@ -15,11 +15,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
+//	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
 	_ "net/http/pprof"
+	"github.com/russross/blackfriday"
 )
 
 const (
@@ -92,20 +93,8 @@ var (
 			return session.Values["token"]
 		},
 		"gen_markdown": func(s string) template.HTML {
-			f, _ := ioutil.TempFile(tmpDir, "isucon")
-			defer f.Close()
-			f.WriteString(s)
-			f.Sync()
-			finfo, _ := f.Stat()
-			path := tmpDir + finfo.Name()
-			defer os.Remove(path)
-			cmd := exec.Command(markdownCommand, path)
-			out, err := cmd.Output()
-			if err != nil {
-				log.Printf("can't exec markdown command: %v", err)
-				return ""
-			}
-			return template.HTML(out)
+			 output:=blackfriday.MarkdownBasic([]byte(s))
+                        return template.HTML(output)
 		},
 	}
 	tmpl = template.Must(template.New("tmpl").Funcs(fmap).ParseGlob("templates/*.html"))
@@ -238,7 +227,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUser(w, r, dbConn, session)
 
 	var totalCount int
-	rows, err := dbConn.Query("SELECT count(*) AS c FROM memos WHERE is_private=0")
+	rows, err := dbConn.Query("SELECT count(is_private) AS c FROM memos WHERE is_private=0")
 	if err != nil {
 		serverError(w, err)
 		return
@@ -249,6 +238,7 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	stmt, err := dbConn.Prepare("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT ?")
+	//rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 ORDER BY id DESC LIMIT ?", memosPerPage)
 	if err != nil {
 		serverError(w, err)
 		return
@@ -312,7 +302,7 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 
 	stmt, err := dbConn.Prepare("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?")
-	//rows, err = dbConn.Prepare("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?", memosPerPage, memosPerPage*page)
+	//rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 and id > ? ORDER BY created_at DESC, id DESC LIMIT ?", memosPerPage*page, memosPerPage)
 	if err != nil {
 		serverError(w, err)
 		return
