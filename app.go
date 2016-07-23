@@ -237,11 +237,12 @@ func topHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 
-	rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 ORDER BY id DESC LIMIT ?", memosPerPage)
+	stmt, err := dbConn.Prepare("SELECT * FROM memos WHERE is_private=0 ORDER BY id DESC LIMIT ?")
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	rows, err = stmt.Query(memosPerPage)
 	memos := make(Memos, 0)
 	stmtUser, err := dbConn.Prepare("SELECT username FROM users WHERE id=?")
 	defer stmtUser.Close()
@@ -297,11 +298,12 @@ func recentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 
-	rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 and id > ? ORDER BY created_at DESC, id DESC LIMIT ?", memosPerPage*page, memosPerPage)
+	stmt, err := dbConn.Prepare("SELECT * FROM memos WHERE is_private=0 and id > ? ORDER BY created_at DESC, id DESC LIMIT ?")
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	rows, err = stmt.Query(memosPerPage*page, memosPerPage)
 	memos := make(Memos, 0)
 	stmtUser, err := dbConn.Prepare("SELECT username FROM users WHERE id=?")
 	defer stmtUser.Close()
@@ -441,11 +443,12 @@ func mypageHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-	rows, err := dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? ORDER BY created_at DESC", user.Id)
+	stmt, err := dbConn.Prepare("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? ORDER BY created_at DESC")
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	rows, err := stmt.Query(user.Id)
 	memos := make(Memos, 0)
 	for rows.Next() {
 		memo := Memo{}
@@ -512,11 +515,12 @@ func memoHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		cond = "AND is_private=0"
 	}
-	rows, err = dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at", memo.User)
+	stmt, err := dbConn.Prepare("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at")
 	if err != nil {
 		serverError(w, err)
 		return
 	}
+	rows, err = stmt.Query(memo.User)
 	memos := make(Memos, 0)
 	for rows.Next() {
 		m := Memo{}
