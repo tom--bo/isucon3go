@@ -15,11 +15,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
+//	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
 	_ "net/http/pprof"
+	"github.com/russross/blackfriday"
 )
 
 const (
@@ -92,20 +93,8 @@ var (
 			return session.Values["token"]
 		},
 		"gen_markdown": func(s string) template.HTML {
-			f, _ := ioutil.TempFile(tmpDir, "isucon")
-			defer f.Close()
-			f.WriteString(s)
-			f.Sync()
-			finfo, _ := f.Stat()
-			path := tmpDir + finfo.Name()
-			defer os.Remove(path)
-			cmd := exec.Command(markdownCommand, path)
-			out, err := cmd.Output()
-			if err != nil {
-				log.Printf("can't exec markdown command: %v", err)
-				return ""
-			}
-			return template.HTML(out)
+			 output:=blackfriday.MarkdownBasic([]byte(s))
+                        return template.HTML(output)
 		},
 	}
 	tmpl = template.Must(template.New("tmpl").Funcs(fmap).ParseGlob("templates/*.html"))
