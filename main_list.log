@@ -1,0 +1,682 @@
+Total: 2854 samples
+ROUTINE ====================== main.func·001 in /home/isucon/webapp/go/app.go
+     0     22 Total samples (flat / cumulative)
+     .      .   79:
+     .      .   80: var (
+     .      .   81: 	dbConnPool chan *sql.DB
+     .      .   82: 	baseUrl    *url.URL
+     .      .   83: 	fmap       = template.FuncMap{
+---
+     .      .   84: 		"url_for": func(path string) string {
+     .     22   85: 			return baseUrl.String() + path
+     .      .   86: 		},
+     .      .   87: 		"first_line": func(s string) string {
+     .      .   88: 			sl := strings.Split(s, "\n")
+     .      .   89: 			return sl[0]
+     .      .   90: 		},
+     .      .   91: 		"get_token": func(session *sessions.Session) interface{} {
+     .      .   92: 			return session.Values["token"]
+     .      .   93: 		},
+     .      .   94: 		"gen_markdown": func(s string) template.HTML {
+     .      .   95: 			f, _ := ioutil.TempFile(tmpDir, "isucon")
+     .      .   96: 			defer f.Close()
+     .      .   97: 			f.WriteString(s)
+     .      .   98: 			f.Sync()
+     .      .   99: 			finfo, _ := f.Stat()
+     .      .  100: 			path := tmpDir + finfo.Name()
+     .      .  101: 			defer os.Remove(path)
+     .      .  102: 			cmd := exec.Command(markdownCommand, path)
+     .      .  103: 			out, err := cmd.Output()
+     .      .  104: 			if err != nil {
+     .      .  105: 				log.Printf("can't exec markdown command: %v", err)
+     .      .  106: 				return ""
+     .      .  107: 			}
+     .      .  108: 			return template.HTML(out)
+     .      .  109: 		},
+     .      .  110: 	}
+---
+ROUTINE ====================== main.func·002 in /home/isucon/webapp/go/app.go
+     0    129 Total samples (flat / cumulative)
+     .      .   82: 	baseUrl    *url.URL
+     .      .   83: 	fmap       = template.FuncMap{
+     .      .   84: 		"url_for": func(path string) string {
+     .      .   85: 			return baseUrl.String() + path
+     .      .   86: 		},
+---
+     .      .   87: 		"first_line": func(s string) string {
+     .    129   88: 			sl := strings.Split(s, "\n")
+     .      .   89: 			return sl[0]
+     .      .   90: 		},
+     .      .   91: 		"get_token": func(session *sessions.Session) interface{} {
+     .      .   92: 			return session.Values["token"]
+     .      .   93: 		},
+     .      .   94: 		"gen_markdown": func(s string) template.HTML {
+     .      .   95: 			f, _ := ioutil.TempFile(tmpDir, "isucon")
+     .      .   96: 			defer f.Close()
+     .      .   97: 			f.WriteString(s)
+     .      .   98: 			f.Sync()
+     .      .   99: 			finfo, _ := f.Stat()
+     .      .  100: 			path := tmpDir + finfo.Name()
+     .      .  101: 			defer os.Remove(path)
+     .      .  102: 			cmd := exec.Command(markdownCommand, path)
+     .      .  103: 			out, err := cmd.Output()
+     .      .  104: 			if err != nil {
+     .      .  105: 				log.Printf("can't exec markdown command: %v", err)
+     .      .  106: 				return ""
+     .      .  107: 			}
+     .      .  108: 			return template.HTML(out)
+     .      .  109: 		},
+     .      .  110: 	}
+---
+ROUTINE ====================== main.func·004 in /home/isucon/webapp/go/app.go
+     0   1124 Total samples (flat / cumulative)
+     .      .   89: 			return sl[0]
+     .      .   90: 		},
+     .      .   91: 		"get_token": func(session *sessions.Session) interface{} {
+     .      .   92: 			return session.Values["token"]
+     .      .   93: 		},
+---
+     .      .   94: 		"gen_markdown": func(s string) template.HTML {
+     .      2   95: 			f, _ := ioutil.TempFile(tmpDir, "isucon")
+     .      .   96: 			defer f.Close()
+     .      3   97: 			f.WriteString(s)
+     .      .   98: 			f.Sync()
+     .      2   99: 			finfo, _ := f.Stat()
+     .      1  100: 			path := tmpDir + finfo.Name()
+     .      1  101: 			defer os.Remove(path)
+     .      .  102: 			cmd := exec.Command(markdownCommand, path)
+     .   1112  103: 			out, err := cmd.Output()
+     .      .  104: 			if err != nil {
+     .      .  105: 				log.Printf("can't exec markdown command: %v", err)
+     .      1  106: 				return ""
+     .      .  107: 			}
+     .      2  108: 			return template.HTML(out)
+     .      .  109: 		},
+     .      .  110: 	}
+---
+     .      .  111: 	tmpl = template.Must(template.New("tmpl").Funcs(fmap).ParseGlob("templates/*.html"))
+     .      .  112: )
+     .      .  113:
+     .      .  114: func main() {
+ROUTINE ====================== main.func·010 in /home/isucon/webapp/go/app.go
+     0      1 Total samples (flat / cumulative)
+     .      .  441: 		serverError(w, err)
+     .      .  442: 		return
+     .      .  443: 	}
+     .      .  444: 	prepareHandler(w, r)
+     .      .  445: 	dbConn := <-dbConnPool
+---
+     .      .  446: 	defer func() {
+     .      1  447: 		dbConnPool <- dbConn
+     .      .  448: 	}()
+     .      .  449:
+     .      .  450: 	user := getUser(w, r, dbConn, session)
+     .      .  451: 	if user == nil {
+     .      .  452: 		http.Redirect(w, r, "/", http.StatusFound)
+     .      .  453: 		return
+     .      .  454: 	}
+     .      .  455: 	rows, err := dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? ORDER BY created_at DESC", user.Id)
+     .      .  456: 	if err != nil {
+     .      .  457: 		serverError(w, err)
+     .      .  458: 		return
+     .      .  459: 	}
+     .      .  460: 	memos := make(Memos, 0)
+     .      .  461: 	for rows.Next() {
+     .      .  462: 		memo := Memo{}
+     .      .  463: 		rows.Scan(&memo.Id, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
+     .      .  464: 		memos = append(memos, &memo)
+     .      .  465: 	}
+     .      .  466: 	v := &View{
+     .      .  467: 		Memos:   &memos,
+     .      .  468: 		User:    user,
+     .      .  469: 		Session: session,
+     .      .  470: 	}
+     .      .  471: 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
+     .      .  472: 		serverError(w, err)
+     .      .  473: 	}
+     .      .  474: }
+---
+ROUTINE ====================== main.getUser in /home/isucon/webapp/go/app.go
+     0      8 Total samples (flat / cumulative)
+     .      .  181: func loadSession(w http.ResponseWriter, r *http.Request) (session *sessions.Session, err error) {
+     .      .  182: 	store := sessions.NewMemcacheStore(memcachedServer, []byte(sessionSecret))
+     .      .  183: 	return store.Get(r, sessionName)
+     .      .  184: }
+     .      .  185:
+---
+     .      .  186: func getUser(w http.ResponseWriter, r *http.Request, dbConn *sql.DB, session *sessions.Session) *User {
+     .      .  187: 	userId := session.Values["user_id"]
+     .      .  188: 	if userId == nil {
+     .      .  189: 		return nil
+     .      .  190: 	}
+     .      .  191: 	user := &User{}
+     .      7  192: 	rows, err := dbConn.Query("SELECT * FROM users WHERE id=?", userId)
+     .      .  193: 	if err != nil {
+     .      .  194: 		serverError(w, err)
+     .      .  195: 		return nil
+     .      .  196: 	}
+     .      .  197: 	if rows.Next() {
+     .      1  198: 		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Salt, &user.LastAccess)
+     .      .  199: 		rows.Close()
+     .      .  200: 	}
+     .      .  201: 	if user != nil {
+     .      .  202: 		w.Header().Add("Cache-Control", "private")
+     .      .  203: 	}
+     .      .  204: 	return user
+---
+     .      .  205: }
+     .      .  206:
+     .      .  207: func antiCSRF(w http.ResponseWriter, r *http.Request, session *sessions.Session) bool {
+     .      .  208: 	if r.FormValue("sid") != session.Values["token"] {
+     .      .  209: 		code := http.StatusBadRequest
+ROUTINE ====================== main.loadSession in /home/isucon/webapp/go/app.go
+     0     69 Total samples (flat / cumulative)
+     .      .  176: 	} else {
+     .      .  177: 		baseUrl, _ = url.Parse("http://" + r.Host)
+     .      .  178: 	}
+     .      .  179: }
+     .      .  180:
+---
+     .      .  181: func loadSession(w http.ResponseWriter, r *http.Request) (session *sessions.Session, err error) {
+     .      7  182: 	store := sessions.NewMemcacheStore(memcachedServer, []byte(sessionSecret))
+     .     62  183: 	return store.Get(r, sessionName)
+---
+     .      .  184: }
+     .      .  185:
+     .      .  186: func getUser(w http.ResponseWriter, r *http.Request, dbConn *sql.DB, session *sessions.Session) *User {
+     .      .  187: 	userId := session.Values["user_id"]
+     .      .  188: 	if userId == nil {
+ROUTINE ====================== main.memoHandler in /home/isucon/webapp/go/app.go
+     3   1393 Total samples (flat / cumulative)
+     .      .  471: 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
+     .      .  472: 		serverError(w, err)
+     .      .  473: 	}
+     .      .  474: }
+     .      .  475:
+---
+     .      .  476: func memoHandler(w http.ResponseWriter, r *http.Request) {
+     .     42  477: 	session, err := loadSession(w, r)
+     .      .  478: 	if err != nil {
+     .      .  479: 		serverError(w, err)
+     .      .  480: 		return
+     .      .  481: 	}
+     .      1  482: 	prepareHandler(w, r)
+     .      .  483: 	vars := mux.Vars(r)
+     .      .  484: 	memoId := vars["memo_id"]
+     .      .  485: 	dbConn := <-dbConnPool
+     .      .  486: 	defer func() {
+     .      .  487: 		dbConnPool <- dbConn
+     .      .  488: 	}()
+     .      8  489: 	user := getUser(w, r, dbConn, session)
+     .      .  490:
+     .      2  491: 	rows, err := dbConn.Query("SELECT id, user, content, is_private, created_at, updated_at FROM memos WHERE id=?", memoId)
+     .      .  492: 	if err != nil {
+     .      .  493: 		serverError(w, err)
+     .      .  494: 		return
+     .      .  495: 	}
+     .      .  496: 	memo := &Memo{}
+     .      .  497: 	if rows.Next() {
+     .      3  498: 		rows.Scan(&memo.Id, &memo.User, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
+     .      .  499: 		rows.Close()
+     .      .  500: 	} else {
+     .      .  501: 		notFound(w)
+     .      .  502: 		return
+     .      .  503: 	}
+     .      .  504: 	if memo.IsPrivate == 1 {
+     .      .  505: 		if user == nil || user.Id != memo.User {
+     .      .  506: 			notFound(w)
+     .      .  507: 			return
+     .      .  508: 		}
+     .      .  509: 	}
+     .      5  510: 	rows, err = dbConn.Query("SELECT username FROM users WHERE id=?", memo.User)
+     .      .  511: 	if err != nil {
+     .      .  512: 		serverError(w, err)
+     .      .  513: 		return
+     .      .  514: 	}
+     .      1  515: 	if rows.Next() {
+     .      .  516: 		rows.Scan(&memo.Username)
+     .      .  517: 		rows.Close()
+     .      .  518: 	}
+     .      .  519:
+     .      .  520: 	var cond string
+     .      .  521: 	if user != nil && user.Id == memo.User {
+     .      .  522: 		cond = ""
+     .      .  523: 	} else {
+     .      .  524: 		cond = "AND is_private=0"
+     .      .  525: 	}
+     .      8  526: 	rows, err = dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? "+cond+" ORDER BY created_at", memo.User)
+     .      .  527: 	if err != nil {
+     .      .  528: 		serverError(w, err)
+     .      .  529: 		return
+     .      .  530: 	}
+     .      .  531: 	memos := make(Memos, 0)
+     .     52  532: 	for rows.Next() {
+     2      6  533: 		m := Memo{}
+     .    110  534: 		rows.Scan(&m.Id, &m.Content, &m.IsPrivate, &m.CreatedAt, &m.UpdatedAt)
+     .      .  535: 		memos = append(memos, &m)
+     .      .  536: 	}
+     .      .  537: 	rows.Close()
+     .      .  538: 	var older *Memo
+     .      .  539: 	var newer *Memo
+     .      .  540: 	for i, m := range memos {
+     1      1  541: 		if m.Id == memo.Id {
+     .      .  542: 			if i > 0 {
+     .      .  543: 				older = memos[i-1]
+     .      .  544: 			}
+     .      .  545: 			if i < len(memos)-1 {
+     .      .  546: 				newer = memos[i+1]
+     .      .  547: 			}
+     .      .  548: 		}
+     .      .  549: 	}
+     .      .  550:
+     .      .  551: 	v := &View{
+     .      .  552: 		User:    user,
+     .      .  553: 		Memo:    memo,
+     .      .  554: 		Older:   older,
+     .      .  555: 		Newer:   newer,
+     .      1  556: 		Session: session,
+     .      .  557: 	}
+     .   1153  558: 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
+     .      .  559: 		serverError(w, err)
+     .      .  560: 	}
+     .      .  561: }
+---
+     .      .  562:
+     .      .  563: func memoPostHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  564: 	session, err := loadSession(w, r)
+     .      .  565: 	if err != nil {
+     .      .  566: 		serverError(w, err)
+ROUTINE ====================== main.memoPostHandler in /home/isucon/webapp/go/app.go
+     0      8 Total samples (flat / cumulative)
+     .      .  558: 	if err = tmpl.ExecuteTemplate(w, "memo", v); err != nil {
+     .      .  559: 		serverError(w, err)
+     .      .  560: 	}
+     .      .  561: }
+     .      .  562:
+---
+     .      .  563: func memoPostHandler(w http.ResponseWriter, r *http.Request) {
+     .      6  564: 	session, err := loadSession(w, r)
+     .      .  565: 	if err != nil {
+     .      .  566: 		serverError(w, err)
+     .      .  567: 		return
+     .      .  568: 	}
+     .      .  569: 	prepareHandler(w, r)
+     .      .  570: 	if antiCSRF(w, r, session) {
+     .      .  571: 		return
+     .      .  572: 	}
+     .      .  573: 	dbConn := <-dbConnPool
+     .      .  574: 	defer func() {
+     .      .  575: 		dbConnPool <- dbConn
+     .      .  576: 	}()
+     .      .  577:
+     .      .  578: 	user := getUser(w, r, dbConn, session)
+     .      .  579: 	if user == nil {
+     .      .  580: 		http.Redirect(w, r, "/", http.StatusFound)
+     .      .  581: 		return
+     .      .  582: 	}
+     .      .  583: 	var isPrivate int
+     .      .  584: 	if r.FormValue("is_private") == "1" {
+     .      .  585: 		isPrivate = 1
+     .      .  586: 	} else {
+     .      .  587: 		isPrivate = 0
+     .      .  588: 	}
+     .      .  589: 	result, err := dbConn.Exec(
+     .      .  590: 		"INSERT INTO memos (user, content, is_private, created_at) VALUES (?, ?, ?, now())",
+     .      .  591: 		user.Id, r.FormValue("content"), isPrivate,
+     .      1  592: 	)
+     .      .  593: 	if err != nil {
+     .      .  594: 		serverError(w, err)
+     .      .  595: 		return
+     .      .  596: 	}
+     .      1  597: 	newId, _ := result.LastInsertId()
+     .      .  598: 	http.Redirect(w, r, fmt.Sprintf("/memo/%d", newId), http.StatusFound)
+     .      .  599: }
+---
+ROUTINE ====================== main.mypageHandler in /home/isucon/webapp/go/app.go
+     1    176 Total samples (flat / cumulative)
+     .      .  433:
+     .      .  434: 	http.SetCookie(w, sessions.NewCookie(sessionName, "", &sessions.Options{MaxAge: -1}))
+     .      .  435: 	http.Redirect(w, r, "/", http.StatusFound)
+     .      .  436: }
+     .      .  437:
+---
+     .      .  438: func mypageHandler(w http.ResponseWriter, r *http.Request) {
+     .      5  439: 	session, err := loadSession(w, r)
+     .      .  440: 	if err != nil {
+     .      1  441: 		serverError(w, err)
+     .      .  442: 		return
+     .      .  443: 	}
+     .      .  444: 	prepareHandler(w, r)
+     .      .  445: 	dbConn := <-dbConnPool
+     .      .  446: 	defer func() {
+     .      .  447: 		dbConnPool <- dbConn
+     .      .  448: 	}()
+     .      .  449:
+     .      .  450: 	user := getUser(w, r, dbConn, session)
+     .      .  451: 	if user == nil {
+     .      .  452: 		http.Redirect(w, r, "/", http.StatusFound)
+     .      .  453: 		return
+     .      .  454: 	}
+     .      .  455: 	rows, err := dbConn.Query("SELECT id, content, is_private, created_at, updated_at FROM memos WHERE user=? ORDER BY created_at DESC", user.Id)
+     .      .  456: 	if err != nil {
+     .      .  457: 		serverError(w, err)
+     .      .  458: 		return
+     .      .  459: 	}
+     .      .  460: 	memos := make(Memos, 0)
+     .     11  461: 	for rows.Next() {
+     .      1  462: 		memo := Memo{}
+     .     25  463: 		rows.Scan(&memo.Id, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
+     1      1  464: 		memos = append(memos, &memo)
+     .      .  465: 	}
+     .      .  466: 	v := &View{
+     .      .  467: 		Memos:   &memos,
+     .      .  468: 		User:    user,
+     .      .  469: 		Session: session,
+     .      .  470: 	}
+     .    132  471: 	if err = tmpl.ExecuteTemplate(w, "mypage", v); err != nil {
+     .      .  472: 		serverError(w, err)
+     .      .  473: 	}
+     .      .  474: }
+---
+     .      .  475:
+     .      .  476: func memoHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  477: 	session, err := loadSession(w, r)
+     .      .  478: 	if err != nil {
+     .      .  479: 		serverError(w, err)
+ROUTINE ====================== main.prepareHandler in /home/isucon/webapp/go/app.go
+     0      1 Total samples (flat / cumulative)
+     .      .  168: 		os.Exit(1)
+     .      .  169: 	}
+     .      .  170: 	return &config
+     .      .  171: }
+     .      .  172:
+---
+     .      .  173: func prepareHandler(w http.ResponseWriter, r *http.Request) {
+     .      1  174: 	if h := r.Header.Get("X-Forwarded-Host"); h != "" {
+     .      .  175: 		baseUrl, _ = url.Parse("http://" + h)
+     .      .  176: 	} else {
+     .      .  177: 		baseUrl, _ = url.Parse("http://" + r.Host)
+     .      .  178: 	}
+     .      .  179: }
+---
+     .      .  180:
+     .      .  181: func loadSession(w http.ResponseWriter, r *http.Request) (session *sessions.Session, err error) {
+     .      .  182: 	store := sessions.NewMemcacheStore(memcachedServer, []byte(sessionSecret))
+     .      .  183: 	return store.Get(r, sessionName)
+     .      .  184: }
+ROUTINE ====================== main.recentHandler in /home/isucon/webapp/go/app.go
+     0    486 Total samples (flat / cumulative)
+     .      .  280: 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
+     .      .  281: 		serverError(w, err)
+     .      .  282: 	}
+     .      .  283: }
+     .      .  284:
+---
+     .      .  285: func recentHandler(w http.ResponseWriter, r *http.Request) {
+     .      1  286: 	session, err := loadSession(w, r)
+     .      .  287: 	if err != nil {
+     .      3  288: 		serverError(w, err)
+     .      .  289: 		return
+     .      .  290: 	}
+     .      .  291: 	prepareHandler(w, r)
+     .      .  292: 	dbConn := <-dbConnPool
+     .      .  293: 	defer func() {
+     .      .  294: 		dbConnPool <- dbConn
+     .      .  295: 	}()
+     .      .  296: 	user := getUser(w, r, dbConn, session)
+     .      .  297: 	vars := mux.Vars(r)
+     .      .  298: 	page, _ := strconv.Atoi(vars["page"])
+     .      .  299:
+     .      1  300: 	rows, err := dbConn.Query("SELECT count(*) AS c FROM memos WHERE is_private=0")
+     .      .  301: 	if err != nil {
+     .      .  302: 		serverError(w, err)
+     .      .  303: 		return
+     .      .  304: 	}
+     .      .  305: 	var totalCount int
+     .      .  306: 	if rows.Next() {
+     .      .  307: 		rows.Scan(&totalCount)
+     .      .  308: 	}
+     .      1  309: 	rows.Close()
+     .      .  310:
+     .      3  311: 	rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?", memosPerPage, memosPerPage*page)
+     .      .  312: 	if err != nil {
+     .      .  313: 		serverError(w, err)
+     .      .  314: 		return
+     .      .  315: 	}
+     .      .  316: 	memos := make(Memos, 0)
+     .      4  317: 	stmtUser, err := dbConn.Prepare("SELECT username FROM users WHERE id=?")
+     .      .  318: 	defer stmtUser.Close()
+     .      .  319: 	if err != nil {
+     .      .  320: 		serverError(w, err)
+     .      .  321: 		return
+     .      .  322: 	}
+     .     30  323: 	for rows.Next() {
+     .      .  324: 		memo := Memo{}
+     .     67  325: 		rows.Scan(&memo.Id, &memo.User, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
+     .     74  326: 		stmtUser.QueryRow(memo.User).Scan(&memo.Username)
+     .      2  327: 		memos = append(memos, &memo)
+     .      .  328: 	}
+     .      .  329: 	if len(memos) == 0 {
+     .      .  330: 		notFound(w)
+     .      .  331: 		return
+     .      .  332: 	}
+     .      .  333:
+     .      .  334: 	v := &View{
+     .      .  335: 		Total:     totalCount,
+     .      .  336: 		Page:      page,
+     .      .  337: 		PageStart: memosPerPage*page + 1,
+     .      .  338: 		PageEnd:   memosPerPage * (page + 1),
+     .      .  339: 		Memos:     &memos,
+     .      .  340: 		User:      user,
+     .      .  341: 		Session:   session,
+     .      .  342: 	}
+     .    300  343: 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
+     .      .  344: 		serverError(w, err)
+     .      .  345: 	}
+     .      .  346: }
+---
+     .      .  347:
+     .      .  348: func signinHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  349: 	session, err := loadSession(w, r)
+     .      .  350: 	if err != nil {
+     .      .  351: 		serverError(w, err)
+ROUTINE ====================== main.signinHandler in /home/isucon/webapp/go/app.go
+     0      1 Total samples (flat / cumulative)
+     .      .  343: 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
+     .      .  344: 		serverError(w, err)
+     .      .  345: 	}
+     .      .  346: }
+     .      .  347:
+---
+     .      .  348: func signinHandler(w http.ResponseWriter, r *http.Request) {
+     .      1  349: 	session, err := loadSession(w, r)
+     .      .  350: 	if err != nil {
+     .      .  351: 		serverError(w, err)
+     .      .  352: 		return
+     .      .  353: 	}
+     .      .  354: 	prepareHandler(w, r)
+     .      .  355: 	dbConn := <-dbConnPool
+     .      .  356: 	defer func() {
+     .      .  357: 		dbConnPool <- dbConn
+     .      .  358: 	}()
+     .      .  359: 	user := getUser(w, r, dbConn, session)
+     .      .  360:
+     .      .  361: 	v := &View{
+     .      .  362: 		User:    user,
+     .      .  363: 		Session: session,
+     .      .  364: 	}
+     .      .  365: 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
+     .      .  366: 		serverError(w, err)
+     .      .  367: 		return
+     .      .  368: 	}
+     .      .  369: }
+---
+     .      .  370:
+     .      .  371: func signinPostHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  372: 	session, err := loadSession(w, r)
+     .      .  373: 	if err != nil {
+     .      .  374: 		serverError(w, err)
+ROUTINE ====================== main.signinPostHandler in /home/isucon/webapp/go/app.go
+     0      8 Total samples (flat / cumulative)
+     .      .  366: 		serverError(w, err)
+     .      .  367: 		return
+     .      .  368: 	}
+     .      .  369: }
+     .      .  370:
+---
+     .      .  371: func signinPostHandler(w http.ResponseWriter, r *http.Request) {
+     .      1  372: 	session, err := loadSession(w, r)
+     .      .  373: 	if err != nil {
+     .      .  374: 		serverError(w, err)
+     .      .  375: 		return
+     .      .  376: 	}
+     .      .  377: 	prepareHandler(w, r)
+     .      .  378: 	dbConn := <-dbConnPool
+     .      .  379: 	defer func() {
+     .      .  380: 		dbConnPool <- dbConn
+     .      .  381: 	}()
+     .      .  382:
+     .      1  383: 	username := r.FormValue("username")
+     .      .  384: 	password := r.FormValue("password")
+     .      .  385: 	user := &User{}
+     .      .  386: 	rows, err := dbConn.Query("SELECT id, username, password, salt FROM users WHERE username=?", username)
+     .      .  387: 	if err != nil {
+     .      .  388: 		serverError(w, err)
+     .      .  389: 		return
+     .      .  390: 	}
+     .      .  391: 	if rows.Next() {
+     .      .  392: 		rows.Scan(&user.Id, &user.Username, &user.Password, &user.Salt)
+     .      .  393: 	}
+     .      .  394: 	rows.Close()
+     .      .  395: 	if user.Id > 0 {
+     .      .  396: 		h := sha256.New()
+     .      .  397: 		h.Write([]byte(user.Salt + password))
+     .      .  398: 		if user.Password == fmt.Sprintf("%x", h.Sum(nil)) {
+     .      .  399: 			session.Values["user_id"] = user.Id
+     .      .  400: 			session.Values["token"] = fmt.Sprintf("%x", securecookie.GenerateRandomKey(32))
+     .      5  401: 			if err := session.Save(r, w); err != nil {
+     .      .  402: 				serverError(w, err)
+     .      .  403: 				return
+     .      .  404: 			}
+     .      .  405: 			if _, err := dbConn.Exec("UPDATE users SET last_access=now() WHERE id=?", user.Id); err != nil {
+     .      .  406: 				serverError(w, err)
+     .      .  407: 				return
+     .      .  408: 			} else {
+     .      1  409: 				http.Redirect(w, r, "/mypage", http.StatusFound)
+     .      .  410: 			}
+     .      .  411: 			return
+     .      .  412: 		}
+     .      .  413: 	}
+     .      .  414: 	v := &View{
+     .      .  415: 		Session: session,
+     .      .  416: 	}
+     .      .  417: 	if err := tmpl.ExecuteTemplate(w, "signin", v); err != nil {
+     .      .  418: 		serverError(w, err)
+     .      .  419: 		return
+     .      .  420: 	}
+     .      .  421: }
+---
+     .      .  422:
+     .      .  423: func signoutHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  424: 	session, err := loadSession(w, r)
+     .      .  425: 	if err != nil {
+     .      .  426: 		serverError(w, err)
+ROUTINE ====================== main.signoutHandler in /home/isucon/webapp/go/app.go
+     0     12 Total samples (flat / cumulative)
+     .      .  418: 		serverError(w, err)
+     .      .  419: 		return
+     .      .  420: 	}
+     .      .  421: }
+     .      .  422:
+---
+     .      .  423: func signoutHandler(w http.ResponseWriter, r *http.Request) {
+     .     12  424: 	session, err := loadSession(w, r)
+     .      .  425: 	if err != nil {
+     .      .  426: 		serverError(w, err)
+     .      .  427: 		return
+     .      .  428: 	}
+     .      .  429: 	prepareHandler(w, r)
+     .      .  430: 	if antiCSRF(w, r, session) {
+     .      .  431: 		return
+     .      .  432: 	}
+     .      .  433:
+     .      .  434: 	http.SetCookie(w, sessions.NewCookie(sessionName, "", &sessions.Options{MaxAge: -1}))
+     .      .  435: 	http.Redirect(w, r, "/", http.StatusFound)
+     .      .  436: }
+---
+     .      .  437:
+     .      .  438: func mypageHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  439: 	session, err := loadSession(w, r)
+     .      .  440: 	if err != nil {
+     .      .  441: 		serverError(w, err)
+ROUTINE ====================== main.topHandler in /home/isucon/webapp/go/app.go
+     2    421 Total samples (flat / cumulative)
+     .      .  222: func notFound(w http.ResponseWriter) {
+     .      .  223: 	code := http.StatusNotFound
+     .      .  224: 	http.Error(w, http.StatusText(code), code)
+     .      .  225: }
+     .      .  226:
+---
+     .      .  227: func topHandler(w http.ResponseWriter, r *http.Request) {
+     .      1  228: 	session, err := loadSession(w, r)
+     .      .  229: 	if err != nil {
+     .      .  230: 		serverError(w, err)
+     .      .  231: 		return
+     .      .  232: 	}
+     .      .  233: 	prepareHandler(w, r)
+     .      .  234: 	dbConn := <-dbConnPool
+     .      .  235: 	defer func() {
+     .      .  236: 		dbConnPool <- dbConn
+     .      .  237: 	}()
+     .      .  238: 	user := getUser(w, r, dbConn, session)
+     .      .  239:
+     .      .  240: 	var totalCount int
+     .      3  241: 	rows, err := dbConn.Query("SELECT count(*) AS c FROM memos WHERE is_private=0")
+     .      .  242: 	if err != nil {
+     .      .  243: 		serverError(w, err)
+     .      .  244: 		return
+     .      .  245: 	}
+     .      .  246: 	if rows.Next() {
+     .      1  247: 		rows.Scan(&totalCount)
+     .      .  248: 	}
+     .      .  249: 	rows.Close()
+     .      .  250:
+     .      3  251: 	rows, err = dbConn.Query("SELECT * FROM memos WHERE is_private=0 ORDER BY created_at DESC, id DESC LIMIT ?", memosPerPage)
+     .      .  252: 	if err != nil {
+     .      .  253: 		serverError(w, err)
+     .      .  254: 		return
+     .      .  255: 	}
+     .      .  256: 	memos := make(Memos, 0)
+     .      2  257: 	stmtUser, err := dbConn.Prepare("SELECT username FROM users WHERE id=?")
+     .      .  258: 	defer stmtUser.Close()
+     .      .  259: 	if err != nil {
+     .      .  260: 		serverError(w, err)
+     .      .  261: 		return
+     .      .  262: 	}
+     .     29  263: 	for rows.Next() {
+     1      4  264: 		memo := Memo{}
+     .     42  265: 		rows.Scan(&memo.Id, &memo.User, &memo.Content, &memo.IsPrivate, &memo.CreatedAt, &memo.UpdatedAt)
+     .     97  266: 		stmtUser.QueryRow(memo.User).Scan(&memo.Username)
+     1      1  267: 		memos = append(memos, &memo)
+     .      .  268: 	}
+     .      .  269: 	rows.Close()
+     .      .  270:
+     .      .  271: 	v := &View{
+     .      .  272: 		Total:     totalCount,
+     .      .  273: 		Page:      0,
+     .      .  274: 		PageStart: 1,
+     .      .  275: 		PageEnd:   memosPerPage,
+     .      .  276: 		Memos:     &memos,
+     .      .  277: 		User:      user,
+     .      .  278: 		Session:   session,
+     .      .  279: 	}
+     .    238  280: 	if err = tmpl.ExecuteTemplate(w, "index", v); err != nil {
+     .      .  281: 		serverError(w, err)
+     .      .  282: 	}
+     .      .  283: }
+---
+     .      .  284:
+     .      .  285: func recentHandler(w http.ResponseWriter, r *http.Request) {
+     .      .  286: 	session, err := loadSession(w, r)
+     .      .  287: 	if err != nil {
+     .      .  288: 		serverError(w, err)
